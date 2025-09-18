@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Employment Application</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --card:#121821; --ink:#e9eef6; --muted:#9bb0c9; --acc:#7cc4ff; --danger:#ff7c8e; --radius:16px;
+      --label-w:110px; --col-w:86px; --cols:12;
+    }
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"}
+    .wrap{max-width:720px;margin:0 auto;padding:16px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 30px rgba(0,0,0,.35);border-radius:var(--radius);padding:16px}
+    h1{font-size:1.4rem;margin:4px 0 12px}
+    h2{font-size:1.05rem;margin:18px 0 8px;color:var(--acc)}
+    label{display:block;font-size:.9rem;margin-bottom:6px;color:var(--muted)}
+    input,select,textarea{width:100%;box-sizing:border-box;background:#0c131c;color:var(--ink);border:1px solid rgba(255,255,255,.12);padding:12px;border-radius:12px;outline:none}
+    input.error, select.error{border-color: var(--danger); box-shadow: 0 0 0 2px rgba(255,124,142,.15)}
+    .error-text{color: var(--danger); font-size:.85rem; margin-top:6px}
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:480px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:repeat(3,1fr)}}
+    .hint{font-size:.8rem;color:var(--muted)}
+    .btnbar{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{appearance:none;border:none;border-radius:999px;padding:12px 16px;cursor:pointer;font-weight:600}
+    .primary{background:linear-gradient(90deg,var(--acc),#99b7ff);color:#04101a}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,.18);color:var(--ink)}
+    .disabled{opacity:.6;pointer-events:none}
+
+    /* Availability grid */
+    .avail{margin-top:6px;border:1px solid rgba(255,255,255,.12);border-radius:12px;overflow:auto}
+    .avail-inner{min-width:calc(var(--label-w) + var(--cols) * var(--col-w))}
+    .avail-head{position:sticky;top:0;background:#0c131c;border-bottom:1px solid rgba(255,255,255,.08);z-index:3}
+    .flexrow{display:flex}
+    .cell{flex:0 0 var(--col-w);padding:8px;border-right:1px solid rgba(255,255,255,.06);text-align:center;font-size:.78rem}
+    .cell:last-child{border-right:none}
+    .label{flex:0 0 var(--label-w);text-align:left;padding:8px 10px;color:var(--muted);font-weight:600}
+    .sticky-left{position:sticky;left:0;background:#0e141d;border-right:1px solid rgba(255,255,255,.08);z-index:2}
+    .grid-row{display:flex;border-bottom:1px solid rgba(255,255,255,.08)}
+    .slot{display:flex;align-items:center;justify-content:center;height:38px}
+    .slot input{width:18px;height:18px}
+    .closed{opacity:.5; display:flex; align-items:center; justify-content:center}
+
+    .footer{opacity:.7;text-align:center;font-size:.75rem;margin-top:14px;color:var(--muted)}
+
+    /* Modal */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter: blur(4px); z-index:9999}
+    .overlay.show{display:flex}
+    .modal{width:min(720px,92vw);max-height:86vh;overflow:auto;background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+    .modal header{position:sticky;top:0;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,0));padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .modal .content{padding:14px 16px}
+    .modal .btnbar{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);position:sticky;bottom:0;background:#0e141d}
+    .summary table{width:100%;border-collapse:collapse;min-width:600px}
+    .summary th,.summary td{border:1px solid rgba(255,255,255,.12);padding:8px;font-size:.85rem}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.18);font-size:.78rem;margin:2px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Saica Employment Application</h1>
+      <p class="hint"> Fill out your info, select your availability, then review and submit.</p>
+      <p class="hint">Store hours: <strong>Tue–Fri 10AM–9PM</strong>, <strong>Sat–Sun 11AM–9PM</strong> (closed Monday).</p>
+
+      <section id="formSection">
+        <h2>Applicant Info</h2>
+        <div class="row row-2">
+          <div>
+            <label for="fullName">Full Name</label>
+            <input id="fullName" required placeholder="Jane Doe" />
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" type="tel" required pattern="[0-9\-\+\(\)\s]{7,}" placeholder="(555) 555‑5555" />
+          </div>
+        </div>
+
+        <div class="row row-3">
+          <div>
+            <label for="gender">Gender</label>
+            <select id="gender" required>
+              <option value="">Select…</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+              <option>Prefer not to answer</option>
+            </select>
+          </div>
+          <div>
+            <label for="birthdate">Birthdate</label>
+            <input id="birthdate" type="date" required />
+          </div>
+          <div>
+            <label for="startdate">Earliest Start Date</label>
+            <input id="startdate" type="date" required />
+          </div>
+        </div>
+
+        <div>
+          <label for="experience">Work Experience (summary)</label>
+          <textarea id="experience" placeholder="Briefly describe recent roles, responsibilities, and skills…"></textarea>
+        </div>
+
+        <h2>Availability</h2>
+        <p class="hint">Tap to toggle each hour you can work</p>
+
+        <div id="availabilityGrid" class="avail" aria-live="polite">
+          <div class="avail-inner"><!-- built by JS --></div>
+        </div>
+
+        <div id="formError" class="error-text" style="display:none"></div>
+
+        <div class="btnbar" style="margin-top:12px">
+          <button class="btn ghost" type="button" id="clearAvail">Clear Availability</button>
+          <button class="btn primary" type="button" id="openSummary">Review Summary</button>
+        </div>
+      </section>
+
+      <p class="footer">v1.3 — Modal summary + strict validation + sticky Day column.</p>
+    </div>
+  </div>
+
+  <!-- SUMMARY MODAL -->
+  <div id="summaryModal" class="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <header>
+        <h2 id="modalTitle" style="margin:0">Review Your Application</h2>
+      </header>
+      <div class="content">
+        <div id="summaryBlock" class="summary"></div>
+      </div>
+      <div class="btnbar">
+        <button class="btn ghost" id="keepEditing">No, Continue Editing</button>
+        <button class="btn primary" id="confirmSubmit">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY MODAL -->
+  <div id="summaryModal2" class="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <header>
+        <h2 id="modalTitle" style="margin:0">Review Your Application</h2>
+      </header>
+      <div class="content">
+        <div id="summaryBlock" class="summary"></div>
+      </div>
+      <div class="btnbar">
+        <button class="btn ghost" id="keepEditing">No, Continue Editing</button>
+        <button class="btn primary" id="confirmSubmit">Yes, Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- jsPDF & AutoTable (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <!-- EmailJS (optional) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <script>
+    // ===== CONFIG =====
+    const EMAIL_SETTINGS = { enabled:true, serviceID:"", templateID:"", publicKey:"", toEmail:"andrewsungwoochoi@gmail.com" };
+
+    // ===== UTILITIES =====
+    const $ = sel => document.querySelector(sel);
+    const h = (tag, attrs = {}, children = []) => {
+      const el = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v])=>{ if(k === 'class') el.className = v; else if(k === 'html') el.innerHTML = v; else el.setAttribute(k,v); });
+      children.forEach(c => el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+      return el;
+    };
+
+    // ===== AVAILABILITY MODEL =====
+    const DAYS = [
+      { key:'Mon', start:null, end:null },
+      { key:'Tue', start:10, end:21 },
+      { key:'Wed', start:10, end:21 },
+      { key:'Thu', start:10, end:21 },
+      { key:'Fri', start:10, end:21 },
+      { key:'Sat', start:11, end:21 },
+      { key:'Sun', start:11, end:21 },
+    ];
+    const HOURS = [10,11,12,13,14,15,16,17,18,19,20,21];
+    const availability = {}; DAYS.forEach(d=>{ availability[d.key] = {}; HOURS.forEach(hh=> availability[d.key][hh] = false); });
+
+    function buildAvailabilityGrid(){
+      const container = document.querySelector('#availabilityGrid .avail-inner');
+      container.innerHTML = '';
+      const head = h('div',{class:'avail-head flexrow'});
+      head.appendChild(h('div',{class:'label sticky-left'},['Day']));
+      HOURS.forEach(hr => head.appendChild(h('div',{class:'cell'},[ String(hr).padStart(2,'0')+':00' ])));
+      container.appendChild(head);
+      DAYS.forEach(d => {
+        const row = h('div',{class:'grid-row'});
+        row.appendChild(h('div',{class:'label sticky-left'},[d.key]));
+        HOURS.forEach(hr => {
+          const allowed = d.start !== null && hr >= d.start && hr <= d.end;
+          if(!allowed){ row.appendChild(h('div',{class:'cell closed'},['—'])); }
+          else {
+            const id = `chk_${d.key}_${hr}`;
+            const box = h('input',{type:'checkbox', id});
+            box.checked = availability[d.key][hr] || false;
+            box.addEventListener('change',()=> availability[d.key][hr] = box.checked);
+            const cell = h('div',{class:'cell slot'}); cell.appendChild(box); row.appendChild(cell);
+          }
+        });
+        container.appendChild(row);
+      });
+    }
+
+    function clearAvailability(){ Object.keys(availability).forEach(day=> Object.keys(availability[day]).forEach(hr=> availability[day][hr] = false)); buildAvailabilityGrid(); }
+
+    function collectForm(){
+      return {
+        name: $('#fullName').value.trim(),
+        phone: $('#phone').value.trim(),
+        gender: $('#gender').value,
+        birthdate: $('#birthdate').value,
+        startdate: $('#startdate').value,
+        experience: $('#experience').value.trim(),
+        availability: JSON.parse(JSON.stringify(availability))
+      };
+    }
+
+    function availabilityHasAny(){
+      for(const day of Object.keys(availability)){
+        for(const hr of Object.keys(availability[day])){ if(availability[day][hr]) return true; }
+      }
+      return false;
+    }
+
+    function showError(msg, fields=[]) {
+      const box = $('#formError');
+      box.style.display = 'block';
+      box.textContent = msg;
+      ['#fullName','#phone','#gender','#birthdate','#startdate'].forEach(sel=> $(sel).classList.remove('error'));
+      fields.forEach(sel=> $(sel).classList.add('error'));
+    }
+
+    function clearError(){
+      const box = $('#formError'); box.style.display = 'none'; box.textContent = '';
+      ['#fullName','#phone','#gender','#birthdate','#startdate'].forEach(sel=> $(sel).classList.remove('error'));
+    }
+
+    function validateFormStrict(){
+      const f = collectForm();
+      const missing = [];
+      if(!f.name) missing.push('#fullName');
+      if(!f.phone || !/[0-9]{7,}/.test(f.phone)) missing.push('#phone');
+      if(!f.gender) missing.push('#gender');
+      if(!f.birthdate) missing.push('#birthdate');
+      if(!f.startdate) missing.push('#startdate');
+      if(!availabilityHasAny()) missing.push('availability');
+      if(missing.length){
+        const msg = 'Please complete all required fields (Name, Phone, Gender, Birthdate, Earliest Start) and select at least one availability hour before reviewing.';
+        showError(msg, missing.filter(x=>x!=='availability'));
+        return false;
+      }
+      clearError();
+      return true;
+    }
+
+    function availabilityToReadable(av){
+      const out = {}; Object.keys(av).forEach(day=>{ const hours = Object.keys(av[day]).map(x=>Number(x)).filter(h=>av[day][h]).sort((a,b)=>a-b); out[day] = { hours, ranges: toRanges(hours) }; }); return out;
+    }
+    function toRanges(sortedHours){ if(sortedHours.length===0) return []; const ranges=[]; let start=sortedHours[0], prev=start; for(let i=1;i<sortedHours.length;i++){ const h=sortedHours[i]; if(h===prev+1){ prev=h; continue; } ranges.push([start, prev+1]); start=h; prev=h; } ranges.push([start, prev+1]); return ranges; }
+
+    function renderSummary(data){
+      const av = availabilityToReadable(data.availability);
+      const wrap = h('div');
+      wrap.appendChild(h('div',{class:'row row-2'},[
+        h('div',{class:'card mini'},[ h('div',{class:'pill'},['Name']), h('div',{style:'margin-top:6px'},[data.name]) ]),
+        h('div',{class:'card mini'},[ h('div',{class:'pill'},['Phone']), h('div',{style:'margin-top:6px'},[data.phone]) ])
+      ]));
+      wrap.appendChild(h('div',{class:'row row-3', style:'margin-top:10px'},[
+        h('div',{class:'card mini'},[ h('div',{class:'pill'},['Gender']), h('div',{style:'margin-top:6px'},[data.gender]) ]),
+        h('div',{class:'card mini'},[ h('div',{class:'pill'},['Birthdate']), h('div',{style:'margin-top:6px'},[data.birthdate]) ]),
+        h('div',{class:'card mini'},[ h('div',{class:'pill'},['Earliest Start']), h('div',{style:'margin-top:6px'},[data.startdate]) ])
+      ]));
+      wrap.appendChild(h('h3',{style:'margin:14px 0 4px 0'},['Experience']));
+      wrap.appendChild(h('div',{class:'card mini', style:'padding:12px'},[data.experience || '—']));
+      const table = h('table'); const thead = h('thead'); const thr = h('tr'); ['Day','Selected Hours','Compact Ranges'].forEach(t=> thr.appendChild(h('th',{},[t]))); thead.appendChild(thr); table.appendChild(thead); const tb = h('tbody');
+      Object.keys(av).forEach(day=>{ const hours = av[day].hours.map(h=> `${String(h).padStart(2,'0')}:00`).join(', '); const ranges = av[day].ranges.map(([a,b])=> `${String(a).padStart(2,'0')}:00–${String(b).padStart(2,'0')}:00`).join('; '); const tr = h('tr'); tr.appendChild(h('td',{},[day])); tr.appendChild(h('td',{},[hours || '—'])); tr.appendChild(h('td',{},[ranges || '—'])); tb.appendChild(tr); }); table.appendChild(tb);
+      wrap.appendChild(h('h3',{style:'margin:14px 0 4px 0'},['Availability'])); wrap.appendChild(table);
+      $('#summaryBlock').innerHTML = ''; $('#summaryBlock').appendChild(wrap);
+    }
+
+    async function generatePDF(data){
+      const { jsPDF } = window.jspdf; const doc = new jsPDF({ unit: 'pt', format: 'letter' }); const margin = 40; const line = (y, text, size=12, bold=false) => { doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(size); doc.text(text, margin, y); };
+      line(50, 'Employment Application', 18, true); doc.setDrawColor(180); doc.line(margin, 60, 612 - margin, 60);
+      let y = 90; const step=18; line(y, `Name: ${data.name}`); y+=step; line(y, `Phone: ${data.phone}`); y+=step; line(y, `Gender: ${data.gender}`); y+=step; line(y, `Birthdate: ${data.birthdate}`); y+=step; line(y, `Earliest Start: ${data.startdate}`); y+=step+8;
+      line(y, 'Experience:', 12, true); y+=step; const exp = doc.splitTextToSize(data.experience||'—', 612 - margin*2); doc.text(exp, margin, y); y += Math.max(step, exp.length*14) + 6;
+      const av = availabilityToReadable(data.availability); const rows = Object.keys(av).map(day=> [ day, (av[day].hours.map(h=> `${String(h).padStart(2,'0')}:00`).join(', ') || '—'), (av[day].ranges.map(([a,b])=> `${String(a).padStart(2,'0')}:00–${String(b).padStart(2,'0')}:00`).join('; ') || '—') ]);
+      doc.autoTable({ startY: y, head: [['Day','Selected Hours','Compact Ranges']], body: rows, styles: { fontSize: 10, cellPadding: 6 }, headStyles: { fillColor: [20, 30, 46] }, theme: 'grid', margin: { left: margin, right: margin } });
+      const fileName = `Application_${data.name.replace(/[^a-z0-9]+/gi,'_')}.pdf`; return { doc, fileName };
+    }
+
+    async function sendEmailWithEmailJS({fileBase64, fileName, data}){
+      if(!EMAIL_SETTINGS.enabled){ return { ok:false, message:'EmailJS disabled' }; }
+      try{ emailjs.init({ publicKey: EMAIL_SETTINGS.publicKey }); const res = await emailjs.send(EMAIL_SETTINGS.serviceID, EMAIL_SETTINGS.templateID, { to_email: EMAIL_SETTINGS.toEmail, applicant_name: data.name, message: `New application submitted. Phone: ${data.phone}. Start: ${data.startdate}.`, attachment: fileBase64, filename: fileName }); return { ok:true, message:'Sent via EmailJS', res }; }catch(err){ console.error(err); return { ok:false, message:'EmailJS error: '+(err?.text||err?.message||'unknown') }; }
+      console.log('EmailJS function ran');
+      console.log(sendEmailWithEmailJS);
+    }
+
+    // ===== EVENT WIRES =====
+    document.addEventListener('DOMContentLoaded', ()=>{
+      buildAvailabilityGrid();
+      $('#clearAvail').addEventListener('click', clearAvailability);
+
+      $('#openSummary').addEventListener('click', ()=>{
+        if(!validateFormStrict()) return;
+        const data = collectForm();
+        renderSummary(data);
+        $('#summaryModal').classList.add('show');
+      });
+      $('#keepEditing').addEventListener('click', ()=> $('#summaryModal').classList.remove('show'));
+
+      $('#confirmSubmit').addEventListener('click', async ()=>{
+        const data = collectForm();
+        const { doc, fileName } = await generatePDF(data);
+        const base64 = doc.output('datauristring');
+        const b64payload = base64.split(',')[1];
+        if(EMAIL_SETTINGS.enabled){ await sendEmailWithEmailJS({fileBase64: b64payload, fileName, data}); }
+        doc.save(fileName);
+        $('#summaryModal').classList.remove('show');
+        const msg = document.createElement('div');
+        msg.textContent = 'Submitted! PDF downloaded.'; msg.style.position='fixed'; msg.style.bottom='16px'; msg.style.left='50%'; msg.style.transform='translateX(-50%)'; msg.style.background='#0e141d'; msg.style.border='1px solid rgba(255,255,255,.2)'; msg.style.padding='10px 14px'; msg.style.borderRadius='12px'; msg.style.zIndex='9999';
+        document.body.appendChild(msg); setTimeout(()=> msg.remove(), 2200);
+      });
+
+      ['#fullName','#phone','#gender','#birthdate','#startdate'].forEach(sel=> $(sel).addEventListener('input', clearError));
+    });
+  </script>
+</body>
+</html>
