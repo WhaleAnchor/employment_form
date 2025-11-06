@@ -59,9 +59,10 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Saica Employment Application</h1>
+      <h1 >Saica Employment Application</h1>
       <p class="hint"> Fill out your info, select your availability, then review and submit.</p>
-      <p class="hint">Store hours: <strong>Tue–Fri 10AM–9PM</strong>, <strong>Sat–Sun 11AM–9PM</strong> (closed Monday).</p>
+      <p class="hint"> Our hours are different depending on the day of the week.</p>
+      <p class="hint">Server Hours: <strong>Tue–Fri 10AM–9PM</strong>, <strong>Sat–Sun 11AM–9PM</strong> (closed Monday).</p>
 
       <section id="formSection">
         <h2>Applicant Info</h2>
@@ -103,7 +104,7 @@
         </div>
 
         <h2>Availability</h2>
-        <p class="hint">Tap to toggle each hour you can work</p>
+        <p class="hint">Tap to toggle each hour you can work. Scroll to the right for more hours.</p>
 
         <div id="availabilityGrid" class="avail" aria-live="polite">
           <div class="avail-inner"><!-- built by JS --></div>
@@ -281,7 +282,7 @@
       ]));
       wrap.appendChild(h('h3',{style:'margin:14px 0 4px 0'},['Experience']));
       wrap.appendChild(h('div',{class:'card mini', style:'padding:12px'},[data.experience || '—']));
-      const table = h('table'); const thead = h('thead'); const thr = h('tr'); ['Day','Selected Hours','Compact Ranges'].forEach(t=> thr.appendChild(h('th',{},[t]))); thead.appendChild(thr); table.appendChild(thead); const tb = h('tbody');
+      const table = h('table'); const thead = h('thead'); const thr = h('tr'); ['Day','Compact Ranges','Selected Hours'].forEach(t=> thr.appendChild(h('th',{},[t]))); thead.appendChild(thr); table.appendChild(thead); const tb = h('tbody');
       Object.keys(av).forEach(day=>{ const hours = av[day].hours.map(h=> `${String(h).padStart(2,'0')}:00`).join(', '); const ranges = av[day].ranges.map(([a,b])=> `${String(a).padStart(2,'0')}:00–${String(b).padStart(2,'0')}:00`).join('; '); const tr = h('tr'); tr.appendChild(h('td',{},[day])); tr.appendChild(h('td',{},[hours || '—'])); tr.appendChild(h('td',{},[ranges || '—'])); tb.appendChild(tr); }); table.appendChild(tb);
       wrap.appendChild(h('h3',{style:'margin:14px 0 4px 0'},['Availability'])); wrap.appendChild(table);
       $('#summaryBlock').innerHTML = ''; $('#summaryBlock').appendChild(wrap);
@@ -293,7 +294,7 @@
       let y = 90; const step=18; line(y, `Name: ${data.name}`); y+=step; line(y, `Phone: ${data.phone}`); y+=step; line(y, `Gender: ${data.gender}`); y+=step; line(y, `Birthdate: ${data.birthdate}`); y+=step; line(y, `Earliest Start: ${data.startdate}`); y+=step+8;
       line(y, 'Experience:', 12, true); y+=step; const exp = doc.splitTextToSize(data.experience||'—', 612 - margin*2); doc.text(exp, margin, y); y += Math.max(step, exp.length*14) + 6;
       const av = availabilityToReadable(data.availability); const rows = Object.keys(av).map(day=> [ day, (av[day].hours.map(h=> `${String(h).padStart(2,'0')}:00`).join(', ') || '—'), (av[day].ranges.map(([a,b])=> `${String(a).padStart(2,'0')}:00–${String(b).padStart(2,'0')}:00`).join('; ') || '—') ]);
-      doc.autoTable({ startY: y, head: [['Day','Selected Hours','Compact Ranges']], body: rows, styles: { fontSize: 10, cellPadding: 6 }, headStyles: { fillColor: [20, 30, 46] }, theme: 'grid', margin: { left: margin, right: margin } });
+      doc.autoTable({ startY: y, head: [['Day','Compact Ranges','Selected Hours']], body: rows, styles: { fontSize: 10, cellPadding: 6 }, headStyles: { fillColor: [20, 30, 46] }, theme: 'grid', margin: { left: margin, right: margin } });
       const fileName = `Application_${data.name.replace(/[^a-z0-9]+/gi,'_')}.pdf`; return { doc, fileName };
     }
 
